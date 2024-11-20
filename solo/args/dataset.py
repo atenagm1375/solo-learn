@@ -47,6 +47,7 @@ def dataset_args(parser: ArgumentParser):
     parser.add_argument(
         "--data_format", default="image_folder", choices=["image_folder", "dali", "h5"]
     )
+    parser.add_argument("--weights", type=str, default=None)
 
     # percentage of data used from training, leave -1.0 to use all data available
     parser.add_argument("--data_fraction", default=-1.0, type=float)

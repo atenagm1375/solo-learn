@@ -142,17 +142,41 @@ def main(cfg: DictConfig):
             print("Transforms:")
             print(transform)
 
-        train_dataset = prepare_datasets(
-            cfg.data.dataset,
-            transform,
-            train_data_path=cfg.data.train_path,
-            data_format=cfg.data.format,
-            no_labels=cfg.data.no_labels,
-            data_fraction=cfg.data.fraction,
-        )
-        train_loader = prepare_dataloader(
-            train_dataset, batch_size=cfg.optimizer.batch_size, num_workers=cfg.data.num_workers
-        )
+        if cfg.data.weights is None:
+            train_dataset = prepare_datasets(
+                cfg.data.dataset,
+                transform,
+                train_data_path=cfg.data.train_path,
+                data_format=cfg.data.format,
+                no_labels=cfg.data.no_labels,
+                data_fraction=cfg.data.fraction,
+            )
+            train_loader = prepare_dataloader(
+                train_dataset, batch_size=cfg.optimizer.batch_size, num_workers=cfg.data.num_workers
+            )
+        else:
+            train_dataset = prepare_datasets(
+                cfg.data.dataset,
+                transform,
+                train_data_path=cfg.data.train_path,
+                data_format=cfg.data.format,
+                no_labels=False,
+                data_fraction=cfg.data.fraction,
+            )
+            sample_weights = [cfg.data.weights[i] for i in train_dataset.targets]
+            train_dataset = prepare_datasets(
+                cfg.data.dataset,
+                transform,
+                train_data_path=cfg.data.train_path,
+                data_format=cfg.data.format,
+                no_labels=cfg.data.no_labels,
+                data_fraction=cfg.data.fraction,
+            )
+            train_loader = prepare_dataloader(
+                train_dataset, batch_size=cfg.optimizer.batch_size, num_workers=cfg.data.num_workers,
+                sampler=torch.utils.data.WeightedRandomSampler(
+                    weights=sample_weights, num_samples=len(train_dataset), replacement=True)
+            )
 
     # 1.7 will deprecate resume_from_checkpoint, but for the moment
     # the argument is the same, but we need to pass it as ckpt_path to trainer.fit

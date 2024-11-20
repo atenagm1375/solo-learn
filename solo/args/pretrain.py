@@ -59,6 +59,7 @@ def add_and_assert_dataset_cfg(cfg: omegaconf.DictConfig) -> omegaconf.DictConfi
     cfg.data.no_labels = omegaconf_select(cfg, "data.no_labels", False)
     cfg.data.fraction = omegaconf_select(cfg, "data.fraction", -1)
     cfg.debug_augmentations = omegaconf_select(cfg, "debug_augmentations", False)
+    cfg.data.weights = omegaconf_select(cfg, "data.weights", None)
 
     return cfg
 
@@ -133,6 +134,10 @@ def parse_cfg(cfg: omegaconf.DictConfig):
             1,
             sum(entry.is_dir() for entry in os.scandir(cfg.data.train_path)),
         )
+
+    # if cfg.data.weight is given, it should be converted from a string to a list of floats
+    if cfg.data.weights is not None:
+        cfg.data.weights = list(map(float, cfg.data.weights.split(",")))
 
     # find number of big/small crops
     big_size = cfg.augmentations[0].crop_size

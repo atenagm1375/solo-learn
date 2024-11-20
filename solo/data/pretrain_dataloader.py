@@ -374,7 +374,7 @@ def prepare_datasets(
 
 
 def prepare_dataloader(
-    train_dataset: Dataset, batch_size: int = 64, num_workers: int = 4
+    train_dataset: Dataset, batch_size: int = 64, num_workers: int = 4, sampler : torch.utils.data.Sampler = None
 ) -> DataLoader:
     """Prepares the training dataloader for pretraining.
     Args:
@@ -384,13 +384,22 @@ def prepare_dataloader(
     Returns:
         DataLoader: the training dataloader with the desired dataset.
     """
-
-    train_loader = DataLoader(
-        train_dataset,
-        batch_size=batch_size,
-        shuffle=True,
-        num_workers=num_workers,
-        pin_memory=True,
-        drop_last=True,
-    )
+    if sampler is not None:
+        train_loader = DataLoader(
+            train_dataset,
+            batch_size=batch_size,
+            sampler=sampler,
+            num_workers=num_workers,
+            pin_memory=True,
+            drop_last=True,
+        )
+    else:
+        train_loader = DataLoader(
+            train_dataset,
+            batch_size=batch_size,
+            shuffle=True,
+            num_workers=num_workers,
+            pin_memory=True,
+            drop_last=True,
+        )
     return train_loader
